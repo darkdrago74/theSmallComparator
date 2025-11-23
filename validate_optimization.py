@@ -40,6 +40,30 @@ def test_venv_setup():
                     required_packages = ["numpy", "flask", "pillow", "pyserial", "ezdxf"]
                     missing_packages = [pkg for pkg in required_packages if pkg not in installed_packages]
                     
+                    # Special handling for OpenCV since it might not appear in pip list due to installation issues
+                    opencv_missing = True
+                    for pkg in ["opencv", "opencv-python", "opencv-python-headless"]:
+                        if pkg in installed_packages:
+                            opencv_missing = False
+                            break
+
+                    if opencv_missing:
+                        # Try importing cv2 to see if it's available even if not listed in pip
+                        try:
+                            import subprocess as sp
+                            # Try to import cv2 from the current Python environment
+                            result = sp.run([sys.executable, "-c", "import cv2; print(cv2.__version__)"],
+                                            capture_output=True, text=True, timeout=30)
+                            if result.returncode == 0:
+                                print("✓ OpenCV (cv2) is available even if not listed in pip")
+                                # Remove opencv from missing packages if it was there
+                                if "opencv-python-headless" in missing_packages:
+                                    missing_packages.remove("opencv-python-headless")
+                            else:
+                                missing_packages.append("opencv-python-headless (or cv2 import issue)")
+                        except Exception:
+                            missing_packages.append("opencv-python-headless (or cv2 import issue)")
+
                     if not missing_packages:
                         print("✓ All required packages are installed in the virtual environment")
                     else:
@@ -48,6 +72,25 @@ def test_venv_setup():
                         return False
                 else:
                     print(f"? Could not verify installed packages: {result.stderr}")
+                    # Try to manually check if critical packages can be imported
+                    critical_packages = ["numpy", "flask", "pillow", "pyserial", "ezdxf"]
+                    unavailable = []
+                    for pkg in critical_packages:
+                        try:
+                            if pkg == "pillow":
+                                import PIL
+                            elif pkg == "pyserial":
+                                import serial
+                            else:
+                                __import__(pkg)
+                        except ImportError:
+                            unavailable.append(pkg)
+
+                    if unavailable:
+                        print(f"✗ Critical packages unavailable: {unavailable}")
+                        return False
+                    else:
+                        print("? Packages check inconclusive, but critical packages seem to be available")
                     # Don't fail the test if pip list fails, just warn
             except subprocess.TimeoutExpired:
                 print("? Timeout checking installed packages, continuing...")
