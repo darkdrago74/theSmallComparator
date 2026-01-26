@@ -15,3 +15,6 @@ __pycache__/
 theSmallComparator-logs-*.txt
 *.dxf
 *.log
+
+# Helper scripts
+dumbinitgit.sh
