@@ -1,7 +1,7 @@
 # theSmallComparator - Digital Optical Comparator
 
 Enhanced digital optical comparator software with dual-mode CNC control for **GRBL** and **Klipper** based systems.
-Designed for robustness on **Raspberry Pi (Bookworm/Trixie)**, Fedora, and Debian systems.
+Designed for robustness on **Raspberry Pi**, Fedora, and Debian systems. The project is actively developed and tested on **Raspberry Pi Bookworm**, and is forward-compatible with the upcoming **Trixie** release.
 
 ## Overview
 
