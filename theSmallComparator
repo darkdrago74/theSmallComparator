@@ -1,0 +1,50 @@
+#!/bin/bash
+# Launcher for theSmallComparator
+# This script finds the installation directory and runs the application
+
+# Default port
+PORT=5001
+
+# Find the directory where this script is located (resolving symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+INSTALL_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+
+# Check if already running
+if pgrep -f "python.*main.py" > /dev/null; then
+    # Check if it's our service
+    if lsof -i :$PORT > /dev/null 2>&1; then
+        echo "theSmallComparator is already running on port $PORT."
+        
+        if [ "$1" == "--force" ]; then
+             echo "Force flag detected. Killing old process..."
+             fuser -k $PORT/tcp > /dev/null 2>&1
+             sleep 1
+        else
+            echo "You can access it at http://localhost:$PORT"
+            echo "To restart, run: sudo systemctl restart theSmallComparator.service"
+            echo "Or use: $0 --force"
+            exit 0
+        fi
+    fi
+fi
+
+echo "Starting theSmallComparator from $INSTALL_DIR..."
+cd "$INSTALL_DIR"
+
+# Use the project's virtual environment
+VENV_DIR="venv"
+if [ -d "$VENV_DIR" ]; then
+    echo "Activating virtual environment..."
+    # Execute main.py using the venv's python
+    # This avoids altering the current shell's environment with 'source'
+    exec ./"$VENV_DIR"/bin/python3 main.py
+else
+    echo -e "\033[0;31mVirtual environment not found at '$VENV_DIR'!\033[0m"
+    echo "Please run the installation script './install.sh' first."
+    exit 1
+fi

@@ -1,5 +1,5 @@
 """
-DXF Handling Module for Comparatron
+DXF Handling Module for theSmallComparator
 Handles creation and export of DXF files
 """
 

@@ -1,5 +1,5 @@
 """
-Comparatron V1.1 - Flask Version
+theSmallComparator V1.1 - Flask Version
 by Cameron Coward 
 fork by RGP
 http://www.cameroncoward.com
@@ -18,47 +18,35 @@ import subprocess
 from pathlib import Path
 
 def setup_virtual_environment():
-    """Detect and set up the virtual environment if available."""
-    # Look for virtual environment relative to this script's location
-    script_dir = Path(__file__).parent.absolute()
-    venv_paths = [
-        script_dir / "dependencies" / "comparatron_env",
-        Path.home() / "comparatron_env",
-        Path(os.environ.get("VIRTUAL_ENV", "")) if os.environ.get("VIRTUAL_ENV") else None
-    ]
-    
-    for venv_path in venv_paths:
-        if venv_path and venv_path.exists():
-            venv_bin = venv_path / "bin" if os.name != "nt" else venv_path / "Scripts"
-            python_executable = venv_bin / "python3"
-            
-            if python_executable.exists():
-                # Check if we're already running in the virtual environment
-                current_prefix = Path(sys.prefix)
-                if current_prefix.resolve() != venv_path.resolve():
-                    print(f"Virtual environment detected at: {venv_path}")
-                    print("Re-executing with virtual environment...")
-                    
-                    # Re-execute the script using the virtual environment's Python
-                    os.execv(str(python_executable), [str(python_executable), str(Path(__file__))] + sys.argv[1:])
-                else:
-                    print(f"Already running in virtual environment: {current_prefix}")
-                    return True
-    
-    # If no virtual environment found, continue with system installation
-    print("No virtual environment detected, using system Python installation")
-    return False
+    """Check if using virtual environment, otherwise use system installation."""
+    # Check if we're already running in a virtual environment
+    current_prefix = Path(sys.prefix)
+    venv_path = Path(__file__).parent.absolute() / "dependencies" / "theSmallComparator_env"
+
+    # Check if we're already running in the virtual environment
+    if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+        print(f"Currently running in virtual environment: {current_prefix}")
+        return True
+    elif venv_path.exists():
+        # Virtual environment exists but we're not in it
+        print(f"Virtual environment detected at: {venv_path}, but not active")
+        print("Consider activating it or using system installation")
+        return False
+    else:
+        # No virtual environment, use system installation
+        print("Using system Python installation")
+        return False
 
 def main():
-    """Main entry point with virtual environment support."""
+    """Main entry point with virtual environment support and auto-start capability."""
     # Setup virtual environment if available
     venv_used = setup_virtual_environment()
-    
+
     if venv_used:
         print("Using packages from virtual environment")
     else:
         print("Using packages from system installation")
-    
+
     # Import the Flask GUI after ensuring proper environment
     try:
         from gui_flask import main as run_flask_gui
@@ -66,13 +54,13 @@ def main():
     except ImportError as e:
         print(f"Error importing GUI: {e}")
         print("Trying to ensure dependencies are available...")
-        
+
         # Try to install missing packages if needed
         try:
             import subprocess
             import importlib
             missing_packages = []
-            
+
             for pkg in ["flask", "numpy", "cv2", "PIL", "serial", "ezdxf"]:
                 try:
                     if pkg == "cv2":
@@ -85,7 +73,7 @@ def main():
                         importlib.import_module(pkg)
                 except ImportError:
                     missing_packages.append(pkg)
-            
+
             if missing_packages:
                 print(f"Missing packages detected: {missing_packages}")
                 print("Please run the installation script first:")
@@ -94,11 +82,82 @@ def main():
                 return
         except Exception as e:
             print(f"Error checking packages: {e}")
-        
+
         raise e
-    
+
     # Run the Flask GUI
     run_flask_gui()
 
+
+def toggle_autostart_service(enable):
+    """Function to enable/disable the systemd service for auto-start"""
+    import subprocess
+    import os
+
+    try:
+        # Check if user has sudo access
+        if os.getenv('SUDO_USER') is not None or os.geteuid() == 0:
+            # Already running as root/sudo
+            if enable:
+                result = subprocess.run(['systemctl', 'enable', 'theSmallComparator.service'],
+                                      capture_output=True, text=True)
+                if result.returncode == 0:
+                    subprocess.run(['systemctl', 'start', 'theSmallComparator.service'],
+                                 capture_output=True, text=True)
+                    return True, "Auto-start enabled successfully"
+                else:
+                    return False, f"Failed to enable auto-start: {result.stderr}"
+            else:
+                subprocess.run(['systemctl', 'stop', 'theSmallComparator.service'],
+                             capture_output=True, text=True)
+                result = subprocess.run(['systemctl', 'disable', 'theSmallComparator.service'],
+                                      capture_output=True, text=True)
+                if result.returncode == 0 or 'disabled' in result.stdout.lower():
+                    return True, "Auto-start disabled successfully"
+                else:
+                    return False, f"Failed to disable auto-start: {result.stderr}"
+        else:
+            # Use sudo to run systemctl
+            if enable:
+                result = subprocess.run(['sudo', 'systemctl', 'enable', 'theSmallComparator.service'],
+                                      capture_output=True, text=True)
+                if result.returncode == 0:
+                    subprocess.run(['sudo', 'systemctl', 'start', 'theSmallComparator.service'],
+                                 capture_output=True, text=True)
+                    return True, "Auto-start enabled successfully"
+                else:
+                    return False, f"Failed to enable auto-start: {result.stderr}"
+            else:
+                subprocess.run(['sudo', 'systemctl', 'stop', 'theSmallComparator.service'],
+                             capture_output=True, text=True)
+                result = subprocess.run(['sudo', 'systemctl', 'disable', 'theSmallComparator.service'],
+                                      capture_output=True, text=True)
+                if result.returncode == 0 or 'disabled' in result.stdout.lower():
+                    return True, "Auto-start disabled successfully"
+                else:
+                    return False, f"Failed to disable auto-start: {result.stderr}"
+    except Exception as e:
+        return False, f"Error managing auto-start: {str(e)}"
+
+
 if __name__ == "__main__":
+    # Check if command line arguments were provided for auto-start management
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].upper()
+        if arg in ['ON', 'ENABLE', 'TRUE']:
+            success, message = toggle_autostart_service(True)
+            print(message)
+            sys.exit(0 if success else 1)
+        elif arg in ['OFF', 'DISABLE', 'FALSE']:
+            success, message = toggle_autostart_service(False)
+            print(message)
+            sys.exit(0 if success else 1)
+        elif arg in ['-H', '--HELP', 'HELP']:
+            print("Usage: python main.py [ON|OFF|ENABLE|DISABLE]")
+            print("  ON/ENABLE: Enable auto-start on boot")
+            print("  OFF/DISABLE: Disable auto-start on boot")
+            print("  No argument: Start the theSmallComparator web interface normally")
+            sys.exit(0)
+
+    # Normal operation - start the web interface
     main()

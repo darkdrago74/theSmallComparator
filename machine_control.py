@@ -1,5 +1,5 @@
 """
-Control Module for Comparatron
+Control Module for theSmallComparator
 Handles machine control functions like jogging, homing, etc.
 """
 
@@ -19,9 +19,10 @@ class MachineController:
     def __init__(self, serial_communicator):
         self.comm = serial_communicator
         self.feed_rates = {
+            'faster': 3000,
             'fast': 1000,
             'slow': 200,
-            'default': 2000
+            'default': 200  # Changed from 2000 to 200 for safer/slower operation
         }
         self.current_feed_rate = self.feed_rates['default']
         self.jog_distance = 10.0  # Default jog distance
@@ -42,7 +43,7 @@ class MachineController:
     def set_feed_rate(self, rate_type='default'):
         """
         Set feed rate for machine movements
-        
+
         Args:
             rate_type (str): 'fast', 'slow', or 'default'
         """
@@ -52,72 +53,107 @@ class MachineController:
         else:
             print(f"Invalid rate type: {rate_type}")
             return None
+
+    def send_raw_command(self, raw_command):
+        """Send a raw command without homing safety checks for advanced users"""
+        print(f"Sending raw command without safety checks: {raw_command}")
+        if self.comm and hasattr(self.comm, 'send_raw_command'):
+            response = self.comm.send_raw_command(raw_command)
+            return response
+        else:
+            print("No active serial connection")
+            return None
+
+    def get_machine_status(self):
+        """Get current machine status"""
+        if self.comm and hasattr(self.comm, 'get_machine_status'):
+            return self.comm.get_machine_status()
+        else:
+            print("No active serial connection")
+            return None
     
     def jog_x_positive(self):
-        """Jog X axis positive by current jog distance"""
+        """Jog X axis positive by current jog distance using relative moves"""
         distance = self.jog_distance
-        command = f"G1X{distance}Y0\r"
-        logging.info(f"Jogging X+ by {distance}mm")
-        print(f"Jogging X+ by {distance}mm")
+        # Use relative mode for single axis move to avoid coordinate issues
+        command = f"G91G1F{self.current_feed_rate}X{distance}\rG90"  # Move only X, then return to absolute
+        logging.info(f"Jogging X+ by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging X+ by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("X+ jog command sent but no response - check motor power")
         return result
 
     def jog_x_negative(self):
-        """Jog X axis negative by current jog distance"""
+        """Jog X axis negative by current jog distance using relative moves"""
         distance = self.jog_distance
-        command = f"G1X-{distance}Y0\r"
-        logging.info(f"Jogging X- by {distance}mm")
-        print(f"Jogging X- by {distance}mm")
+        command = f"G91G1F{self.current_feed_rate}X-{distance}\rG90"  # Move only X, then return to absolute
+        logging.info(f"Jogging X- by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging X- by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("X- jog command sent but no response - check motor power")
         return result
 
     def jog_y_positive(self):
-        """Jog Y axis positive by current jog distance"""
+        """Jog Y axis positive by current jog distance using relative moves"""
         distance = self.jog_distance
-        command = f"G1X0Y{distance}\r"
-        logging.info(f"Jogging Y+ by {distance}mm")
-        print(f"Jogging Y+ by {distance}mm")
+        command = f"G91G1F{self.current_feed_rate}Y{distance}\rG90"  # Move only Y, then return to absolute
+        logging.info(f"Jogging Y+ by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging Y+ by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("Y+ jog command sent but no response - check motor power")
         return result
 
     def jog_y_negative(self):
-        """Jog Y axis negative by current jog distance"""
+        """Jog Y axis negative by current jog distance using relative moves"""
         distance = self.jog_distance
-        command = f"G1X0Y-{distance}\r"
-        logging.info(f"Jogging Y- by {distance}mm")
-        print(f"Jogging Y- by {distance}mm")
+        command = f"G91G1F{self.current_feed_rate}Y-{distance}\rG90"  # Move only Y, then return to absolute
+        logging.info(f"Jogging Y- by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging Y- by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("Y- jog command sent but no response - check motor power")
         return result
 
     def jog_z_positive(self):
-        """Jog Z axis positive by current jog distance (with safety limit)"""
+        """Jog Z axis positive by current jog distance using relative moves"""
         distance = min(self.jog_distance, 10.0)  # Safety limit
-        command = f"G1Z{distance}\r"
-        logging.info(f"Jogging Z+ by {distance}mm")
-        print(f"Jogging Z+ by {distance}mm")
+        command = f"G91G1F{self.current_feed_rate}Z{distance}\rG90"  # Move only Z, then return to absolute
+        logging.info(f"Jogging Z+ by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging Z+ by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("Z+ jog command sent but no response - check motor power")
         return result
 
     def jog_z_negative(self):
-        """Jog Z axis negative by current jog distance (with safety limit)"""
+        """Jog Z axis negative by current jog distance using relative moves"""
         distance = min(self.jog_distance, 10.0)  # Safety limit
-        command = f"G1Z-{distance}\r"
-        logging.info(f"Jogging Z- by {distance}mm")
-        print(f"Jogging Z- by {distance}mm")
+        command = f"G91G1F{self.current_feed_rate}Z-{distance}\rG90"  # Move only Z, then return to absolute
+        logging.info(f"Jogging Z- by {distance}mm at feed rate {self.current_feed_rate}")
+        print(f"Jogging Z- by {distance}mm at feed rate {self.current_feed_rate}")
         result = self.comm.send_command(command)
+        # Ensure we wait for the move to complete before next command
+        time.sleep(0.1)  # Small delay to ensure command completes
         if result is None:
             print("Z- jog command sent but no response - check motor power")
         return result
+
+    def reset_alarm_state(self):
+        """Reset the alarm state when machine is in alarm condition"""
+        return self.comm.reset_alarm_state()
     
     def home_and_setup(self):
         """
@@ -132,7 +168,7 @@ class MachineController:
         operations = [
             ("Unlocking machine", self.comm.unlock_machine),
             ("Homing machine", self.comm.home_machine),
-            ("Setting feed rate", lambda: self.comm.set_feed(2000)),
+            ("Setting feed rate to safe default", lambda: self.comm.set_feed(200)),  # Changed from 2000 to 200
             ("Setting origin", self.comm.set_origin),
             ("Setting relative mode", self.comm.set_relative_mode)
         ]

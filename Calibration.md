@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the calibration procedures for the Comparatron optical comparator to compensate for mechanical inaccuracies and maintain precision in measurements.
+This document describes the calibration procedures for the theSmallComparator optical comparator to compensate for mechanical inaccuracies and maintain precision in measurements.
 
 ## Types of Calibration Required
 

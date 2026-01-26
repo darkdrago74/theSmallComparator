@@ -1,0 +1,17 @@
+
+# Python virtual environment
+venv/
+.venv/
+
+# Pycache
+__pycache__/
+*.pyc
+
+# SELinux policy files (generated)
+*.pp
+*.te
+
+# Logs and Exports
+theSmallComparator-logs-*.txt
+*.dxf
+*.log

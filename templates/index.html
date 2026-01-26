@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Comparatron - Web Interface</title>
+    <title>theSmallComparator - Web Interface</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -9,27 +10,50 @@
             padding: 20px;
             background-color: #f0f0f0;
         }
+
         .container {
             max-width: 1600px;
             margin: 0 auto;
             background-color: white;
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             color: #333;
             text-align: center;
         }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8em;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .badge-info {
+            background-color: #17a2b8;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
         .main-layout {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
+
         .column {
             flex: 1;
             min-width: 300px;
         }
+
         .panel {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
@@ -37,18 +61,22 @@
             padding: 15px;
             margin-bottom: 15px;
         }
+
         .panel h3 {
             margin-top: 0;
             color: #444;
         }
+
         .camera-view {
             text-align: center;
         }
+
         #videoFeed {
             max-width: 100%;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         .jog-panel {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -57,22 +85,37 @@
             height: 200px;
             position: relative;
         }
+
         .jog-btn {
             padding: 10px;
             font-size: 16px;
         }
-        .x-neg { grid-area: 2 / 1 / 3 / 2; }
-        .x-pos { grid-area: 2 / 3 / 3 / 4; }
-        .y-pos { grid-area: 1 / 2 / 2 / 3; }
-        .y-neg { grid-area: 3 / 2 / 4 / 3; }
-        .z-controls { 
-            grid-area: 2 / 2 / 3 / 3; 
+
+        .x-neg {
+            grid-area: 2 / 1 / 3 / 2;
+        }
+
+        .x-pos {
+            grid-area: 2 / 3 / 3 / 4;
+        }
+
+        .y-pos {
+            grid-area: 1 / 2 / 2 / 3;
+        }
+
+        .y-neg {
+            grid-area: 3 / 2 / 4 / 3;
+        }
+
+        .z-controls {
+            grid-area: 2 / 2 / 3 / 3;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             gap: 5px;
         }
+
         .btn {
             background-color: #4CAF50;
             color: white;
@@ -86,46 +129,76 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
         .btn:hover {
             background-color: #45a049;
         }
+
         .btn-danger {
             background-color: #f44336;
         }
+
         .btn-danger:hover {
             background-color: #da190b;
         }
+
         .btn-warning {
             background-color: #ff9800;
         }
+
         .btn-warning:hover {
             background-color: #e68900;
         }
+
+        .btn-sm {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 2px 1px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .btn-sm:hover {
+            background-color: #45a049;
+        }
+
         .grid-container {
             display: grid;
             grid-template-columns: auto auto;
             gap: 10px;
             align-items: center;
         }
-        input, select {
+
+        input,
+        select {
             padding: 6px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         .status-panel {
             background-color: #e8f5e8;
             padding: 10px;
             border-radius: 4px;
             margin-top: 10px;
         }
+
         .plot-panel {
             text-align: center;
             margin-top: 20px;
         }
+
         #plotCanvas {
             border: 1px solid #ccc;
             background-color: #fff;
         }
+
         .points-list {
             max-height: 200px;
             overflow-y: auto;
@@ -134,31 +207,57 @@
             border-radius: 4px;
             padding: 10px;
         }
+
         .points-list table {
             width: 100%;
             border-collapse: collapse;
         }
-        .points-list th, .points-list td {
+
+        .points-list th,
+        .points-list td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
         }
+
         .points-list th {
             background-color: #f2f2f2;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>Comparatron - Web Interface</h1>
-        
+        <h1>theSmallComparator <span id="systemMode" class="badge badge-warning">Connecting...</span></h1>
+
         <div class="main-layout">
             <div class="column">
+                <div class="panel" style="text-align: center;">
+                    <h3>theSmallComparator Control Interface</h3>
+                    <a href="/calibration" class="btn" style="font-size: 16px; padding: 12px 24px;">🔧 Open Calibration
+                        Settings</a>
+                </div>
+
+                <!-- Serial Connection -->
+                <div class="panel" id="serialConnectionPanel">
+                    <h3>Serial Connection</h3>
+                    <div class="grid-container">
+                        <div>Available Ports:</div>
+                        <select id="portSelect">
+                            <option value="">Select Port</option>
+                        </select>
+                        <div></div>
+                        <button id="refreshPortBtn" class="btn" onclick="refreshSerialPorts()">Refresh Ports</button>
+                        <div></div>
+                        <button id="connectBtn" class="btn" onclick="connectSerial()">Connect</button>
+                    </div>
+                </div>
+
                 <div class="panel camera-view">
                     <h3>Microscope View</h3>
                     <img id="videoFeed" src="/video_feed" alt="Camera Feed">
                 </div>
-                
+
                 <div class="panel plot-panel">
                     <h3>Recorded Points Visualization</h3>
                     <canvas id="plotCanvas" width="600" height="400"></canvas>
@@ -178,9 +277,41 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="panel">
+                    <h3>System Configuration</h3>
+                    <div class="grid-container">
+                        <div>Auto-start on boot:</div>
+                        <div>
+                            <button id="autoStartToggle" class="btn" onclick="toggleAutoStart()">Loading
+                                Service...</button>
+                        </div>
+                    </div>
+                    <div class="grid-container" style="margin-top: 10px;">
+                        <div>Server Management:</div>
+                        <div>
+                            <button class="btn btn-warning" onclick="restartWebServer()">Restart Web Server</button>
+                        </div>
+                    </div>
+                    <div class="grid-container" style="margin-top: 10px;">
+                        <div>Server Shutdown:</div>
+                        <div>
+                            <button class="btn btn-danger" onclick="shutdownWebServer()">Shutdown Web Server</button>
+                        </div>
+                    </div>
+                    <div class="grid-container" style="margin-top: 10px;">
+                        <div>System Management:</div>
+                        <div>
+                            <button class="btn btn-danger" onclick="restartPi()">Restart Pi</button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            
+
             <div class="column">
+
+
                 <div class="panel">
                     <h3>Camera Setup</h3>
                     <div class="grid-container">
@@ -189,14 +320,19 @@
                             <option value="">Select Camera</option>
                         </select>
                         <div></div>
-                        <button class="btn" onclick="refreshCameras()">Refresh Cameras</button>
+                        <button id="scanNewCamBtn" class="btn" onclick="refreshCameras('new')">Scan New (Fast)</button>
+                        <button id="fullScanCamBtn" class="btn btn-warning" style="font-size: 12px;"
+                            onclick="refreshCameras('full')">Full Rescan (Slow)</button>
                         <div></div>
-                        <button class="btn btn-warning" onclick="testCamera()">Test Selected Camera</button>
+                        <button id="testCamBtn" class="btn btn-warning" onclick="testCamera()">Test Selected
+                            Camera</button>
                         <div></div>
-                        <button class="btn" onclick="initializeCamera()">Initialize Camera</button>
+                        <button id="initCamBtn" class="btn" onclick="initializeCamera()">Initialize Camera</button>
                     </div>
                 </div>
-                
+
+
+
                 <div class="panel">
                     <h3>Jog Controls</h3>
                     <div class="grid-container">
@@ -211,30 +347,34 @@
                         <div></div>
                         <div>
                             <label>
-                                <input type="checkbox" id="keyboardEnable" onchange="toggleKeyboardControl()"> Enable Keyboard Arrow Controls
+                                <input type="checkbox" id="keyboardEnable" onchange="toggleKeyboardControl()"> Enable
+                                Keyboard Arrow Controls
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="jog-panel">
                         <button class="btn jog-btn y-pos" id="yPosBtn" onclick="jog('y', 'positive')">Y+</button>
                         <button class="btn jog-btn x-neg" id="xNegBtn" onclick="jog('x', 'negative')">X-</button>
                         <button class="btn jog-btn x-pos" id="xPosBtn" onclick="jog('x', 'positive')">X+</button>
                         <div class="btn jog-btn z-controls">
                             <div>
-                                <button class="btn" style="display:block; width:100%; margin-bottom:5px;" onclick="jog('z', 'positive')">Z+</button>
-                                <button class="btn" style="display:block; width:100%;" onclick="jog('z', 'negative')">Z-</button>
+                                <button class="btn" style="display:block; width:100%; margin-bottom:5px;"
+                                    onclick="jog('z', 'positive')">Z+</button>
+                                <button class="btn" style="display:block; width:100%;"
+                                    onclick="jog('z', 'negative')">Z-</button>
                             </div>
                         </div>
                         <button class="btn jog-btn y-neg" id="yNegBtn" onclick="jog('y', 'negative')">Y-</button>
                     </div>
-                    
+
                     <div>
-                        <button class="btn btn-warning" onclick="setFeedRate('fast')">Fast Feed (1000)</button>
                         <button class="btn btn-warning" onclick="setFeedRate('slow')">Slow Feed (200)</button>
+                        <button class="btn btn-warning" onclick="setFeedRate('fast')">Fast Feed (1000)</button>
+                        <button class="btn btn-warning" onclick="setFeedRate('faster')">Faster Feed (3000)</button>
                     </div>
                 </div>
-                
+
                 <div class="panel">
                     <h3>Point Recording</h3>
                     <div class="grid-container">
@@ -247,37 +387,89 @@
                     </div>
                     <button class="btn" onclick="createPoint()">Create New Point</button>
                 </div>
-                
-                <div class="panel">
-                    <h3>Serial Connection</h3>
-                    <div class="grid-container">
-                        <div>Available Ports:</div>
-                        <select id="portSelect">
-                            <option value="">Select Port</option>
-                        </select>
-                        <div></div>
-                        <button class="btn" onclick="connectSerial()">Connect</button>
-                    </div>
-                </div>
-                
-                <div class="panel">
-                    <h3>Machine Controls</h3>
-                    <button class="btn" onclick="machineControl('home')">Home ($H)</button>
-                    <button class="btn" onclick="machineControl('unlock')">Unlock ($X)</button>
-                    <button class="btn" onclick="machineControl('set_feed')">Set Feed (F2000)</button>
-                    <button class="btn" onclick="machineControl('set_origin')">Set Origin (G92X0Y0)</button>
-                    <button class="btn" onclick="machineControl('set_relative')">Set Relative (G91)</button>
-                </div>
-                
+
                 <div class="panel">
                     <h3>DXF Export</h3>
                     <div class="grid-container">
                         <div>Filename:</div>
-                        <input type="text" id="dxfFilename" value="comparatron.dxf">
+                        <input type="text" id="dxfFilename" value="theSmallComparator.dxf">
                         <div></div>
                         <button class="btn" onclick="exportDXF()">Export DXF</button>
                     </div>
                 </div>
+
+
+                <div class="panel">
+                    <h3>Machine Controls</h3>
+                    <button class="btn" onclick="machineControl('home')">Home ($H)</button>
+                    <button class="btn" onclick="machineControl('unlock')">Unlock ($X)</button>
+                    <button class="btn" onclick="machineControl('reset_alarm')" style="background-color: #ff6b6b;">Reset
+                        Alarm (Ctrl+X)</button>
+                    <button class="btn" onclick="machineControl('set_feed')">Set Feed (F2000)</button>
+                    <button class="btn" onclick="setFeedRate('faster')">Faster Feed (F3000)</button>
+                    <button class="btn" onclick="machineControl('set_origin')">Set Origin (G92X0Y0)</button>
+                    <button class="btn" onclick="machineControl('set_relative')">Set Relative (G91)</button>
+                </div>
+
+                <!-- Dangerous Manual Motion Controls (No Homing Required) -->
+                <div class="panel">
+                    <h3>Dangerous Manual Motion (No Homing!) <span style="color:red;">⚠️</span></h3>
+                    <div>
+                        <p style="color: red; font-weight: bold;">WARNING: These controls bypass safety checks!</p>
+                        <p>Do NOT use if machine is not properly positioned. Risk of collision!</p>
+                    </div>
+                    <div>
+                        <div style="margin-bottom: 10px;">
+                            <label>Manual Distance (mm):</label>
+                            <input type="number" id="manualDistance" value="10.0" step="any" min="0.01"
+                                style="width: 100px;">
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <button class="btn btn-danger" onclick="manualJog('x', -1)">X- (Left)</button>
+                            <button class="btn btn-danger" onclick="manualJog('x', 1)">X+ (Right)</button>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <button class="btn btn-danger" onclick="manualJog('y', -1)">Y- (Backward)</button>
+                            <button class="btn btn-danger" onclick="manualJog('y', 1)">Y+ (Forward)</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-danger" onclick="manualJog('z', -1)">Z- (Down)</button>
+                            <button class="btn btn-danger" onclick="manualJog('z', 1)">Z+ (Up)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRBL Console -->
+                <div class="panel">
+                    <h3>GRBL Console</h3>
+                    <div style="margin-bottom: 10px;">
+                        <label>Send Raw GRBL Command:</label>
+                        <input type="text" id="rawCommandInput" placeholder="Enter GRBL command (e.g., $$, $#, ?)"
+                            style="width: 200px;">
+                        <button class="btn" onclick="sendRawCommand()">Send Command</button>
+                    </div>
+                    <div>
+                        <label>Common Commands:</label><br>
+                        <button class="btn-sm" onclick="setCommandAndSend('$$')">$$ - View Settings</button>
+                        <button class="btn-sm" onclick="setCommandAndSend('$#')"> $# - View Parameters</button>
+                        <button class="btn-sm" onclick="setCommandAndSend('$G')"> $G - View G-Codes</button>
+                        <button class="btn-sm" onclick="setCommandAndSend('?')"> ? - Get Status</button>
+                        <button class="btn-sm" onclick="setCommandAndSend('$X')"> $X - Unlock</button>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label>Console Output:</label><br>
+                        <textarea id="consoleOutput" rows="10" cols="50" readonly
+                            style="width: 100%; font-family: monospace; background-color: #000; color: #0f0; padding: 10px;"></textarea>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn" onclick="clearConsole()">Clear Console</button>
+                        <button class="btn" onclick="getMachineStatus()">Get Machine Status (?)</button>
+                        <button class="btn" onclick="getStatusPeriodically()">Auto-Update Status</button>
+                        <button class="btn" onclick="downloadLogs()">Download Logs</button>
+                    </div>
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -286,7 +478,146 @@
         let recordedPoints = [];
         let canvas = document.getElementById('plotCanvas');
         let ctx = canvas.getContext('2d');
-        
+
+        // Check if auto-start is enabled on page load
+        window.onload = function () {
+            checkAutoStartStatus();
+            drawPlot();
+        };
+
+        // Check and update auto-start toggle button
+        function checkAutoStartStatus() {
+            fetch('/api/auto_start_status')
+                .then(response => response.json())
+                .then(data => {
+                    const button = document.getElementById('autoStartToggle');
+                    if (data.enabled) {
+                        button.textContent = 'Enabled (ON)';
+                        button.className = 'btn btn-success';
+                        button.onclick = () => toggleAutoStart(false);
+                    } else {
+                        button.textContent = 'Disabled (OFF)';
+                        button.className = 'btn btn-warning';
+                        button.onclick = () => toggleAutoStart(true);
+                    }
+                })
+                .catch(error => {
+                    const button = document.getElementById('autoStartToggle');
+                    button.textContent = 'Error checking status';
+                    button.className = 'btn btn-danger';
+                    button.onclick = null;
+                    console.error('Error checking auto-start status:', error);
+                });
+        }
+
+        // Toggle auto-start functionality
+        function toggleAutoStart(enable = null) {
+            // If enable is not specified, toggle the current state
+            if (enable === null) {
+                // Invert current state by checking button text
+                const buttonText = document.getElementById('autoStartToggle').textContent;
+                enable = buttonText.includes('Disabled');
+            }
+
+            fetch('/api/toggle_auto_start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    enable: enable
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    checkAutoStartStatus();  // Refresh the button state
+                    if (data.success) {
+                        const action = enable ? 'enabled' : 'disabled';
+                        alert(`Auto-start has been ${action}. Changes will take effect on next reboot.`);
+                    } else {
+                        alert(`Failed to toggle auto-start: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error toggling auto-start:', error);
+                    alert('Error toggling auto-start. Check console for details.');
+                });
+        }
+
+        // Restart the web server
+        function restartWebServer() {
+            if (confirm('Are you sure you want to restart the theSmallComparator web server? The interface will be temporarily unavailable.')) {
+                fetch('/api/restart_server', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message + '\n\nThe web server will restart shortly. You may need to refresh the page.');
+                        } else {
+                            alert(`Failed to restart server: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error restarting server:', error);
+                        alert('Error restarting server. Check console for details.');
+                    });
+            }
+        }
+
+        // Shutdown the web server
+        function shutdownWebServer() {
+            if (confirm('Are you sure you want to shutdown the theSmallComparator web server? The interface will become unavailable in 30 seconds.')) {
+                fetch('/api/shutdown_server', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message + '\n\nThe web server will shut down in 30 seconds. You will need to restart it manually.');
+                        } else {
+                            alert(`Failed to shutdown server: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error shutting down server:', error);
+                        alert('Error shutting down server. Check console for details.');
+                    });
+            }
+        }
+
+        // Restart the Raspberry Pi
+        function restartPi() {
+            if (confirm('Are you sure you want to restart the Raspberry Pi? This will take a few minutes to complete.')) {
+                fetch('/api/restart_pi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message + '\n\nThe Raspberry Pi will restart shortly. You will need to reconnect when it comes back online.');
+                        } else {
+                            alert(`Failed to restart Pi: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error restarting Pi:', error);
+                        alert('Error restarting Pi. Check console for details.');
+                    });
+            }
+        }
+
+
+
         // Load available cameras
         fetch('/api/cameras')
             .then(response => response.json())
@@ -300,37 +631,84 @@
                     select.appendChild(option);
                 });
             });
-        
-        // Add refresh cameras function
-        function refreshCameras() {
-            fetch('/api/cameras')
+
+        // Helper to manage loading state
+        function setLoading(buttonId, isLoading, loadingText = "Processing...", originalText = null) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+
+            if (isLoading) {
+                if (!button.dataset.originalText) {
+                    button.dataset.originalText = originalText || button.textContent;
+                }
+                button.disabled = true;
+                button.textContent = loadingText;
+                button.classList.add('btn-secondary'); // Optional visual change
+            } else {
+                button.disabled = false;
+                button.textContent = button.dataset.originalText;
+                button.classList.remove('btn-secondary');
+            }
+        }
+
+        // Add refresh cameras function with mode support
+        function refreshCameras(mode = 'new') {
+            const btnId = mode === 'new' ? 'scanNewCamBtn' : 'fullScanCamBtn';
+            const originalText = mode === 'new' ? 'Scan New (Fast)' : 'Full Rescan (Slow)';
+
+            setLoading(btnId, true, "Scanning...", originalText);
+
+            // If doing a full scan, warn user it might take time
+            if (mode === 'full') {
+                if (!confirm("Full rescan takes about 20 seconds. Continue?")) {
+                    setLoading(btnId, false);
+                    return;
+                }
+            }
+
+            fetch('/api/refresh_cameras', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mode: mode })
+            })
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById('cameraSelect');
                     select.innerHTML = '<option value="">Select Camera</option>';
-                    data.forEach(cam => {
-                        const option = document.createElement('option');
-                        option.value = cam;
-                        option.textContent = `Camera ${cam}`;
-                        select.appendChild(option);
-                    });
-                    alert(`Found ${data.length} camera(s)`);
+
+                    if (data.cameras && data.cameras.length > 0) {
+                        data.cameras.forEach(cam => {
+                            const option = document.createElement('option');
+                            option.value = cam;
+                            option.textContent = `Camera ${cam}`;
+                            select.appendChild(option);
+                        });
+                        alert(`Found ${data.cameras.length} camera(s). ${data.message}`);
+                    } else {
+                        alert("No cameras found.");
+                    }
                 })
                 .catch(error => {
                     console.error('Error refreshing cameras:', error);
                     alert('Error refreshing camera list');
+                })
+                .finally(() => {
+                    setLoading(btnId, false);
                 });
         }
-        
+
         function testCamera() {
             const cameraSelect = document.getElementById('cameraSelect');
             if (cameraSelect.value === '') {
                 alert('Please select a camera first');
                 return;
             }
-            
+
             const cameraIndex = parseInt(cameraSelect.value);
-            
+            setLoading('testCamBtn', true, "Testing...");
+
             fetch('/api/test_camera', {
                 method: 'POST',
                 headers: {
@@ -340,21 +718,24 @@
                     camera_index: cameraIndex
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    console.log('Camera test successful');
-                } else {
-                    console.log('Camera test failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error testing camera:', error);
-                alert('Error testing camera');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        console.log('Camera test successful');
+                    } else {
+                        console.log('Camera test failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error testing camera:', error);
+                    alert('Error testing camera');
+                })
+                .finally(() => {
+                    setLoading('testCamBtn', false);
+                });
         }
-        
+
         // Load available ports
         fetch('/api/ports')
             .then(response => response.json())
@@ -368,7 +749,41 @@
                     select.appendChild(option);
                 });
             });
-        
+
+        // Add refresh serial ports function
+        function refreshSerialPorts() {
+            setLoading('refreshPortBtn', true, "Scanning Ports...");
+            fetch('/api/refresh_ports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const select = document.getElementById('portSelect');
+                        select.innerHTML = '<option value="">Select Port</option>';
+                        data.ports.forEach(port => {
+                            const option = document.createElement('option');
+                            option.value = port;
+                            option.textContent = port;
+                            select.appendChild(option);
+                        });
+                        alert(`Found ${data.ports.length} port(s) after refresh: ${data.ports.join(', ')}`);
+                    } else {
+                        alert(`Error refreshing ports: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing ports:', error);
+                    alert('Error refreshing port list');
+                })
+                .finally(() => {
+                    setLoading('refreshPortBtn', false);
+                });
+        }
+
         // Update status periodically
         setInterval(() => {
             fetch('/api/status')
@@ -379,14 +794,15 @@
                     document.getElementById('distance').textContent = data.difference_distance.toFixed(2);
                 });
         }, 1000);
-        
+
         function initializeCamera() {
             const cameraSelect = document.getElementById('cameraSelect');
             if (cameraSelect.value === '') {
                 alert('Please select a camera');
                 return;
             }
-            
+
+            setLoading('initCamBtn', true, "Initializing...");
             fetch('/api/initialize_camera', {
                 method: 'POST',
                 headers: {
@@ -396,49 +812,134 @@
                     camera_index: parseInt(cameraSelect.value)
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error initializing camera');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error initializing camera');
+                })
+                .finally(() => {
+                    setLoading('initCamBtn', false);
+                });
         }
-        
+
         function connectSerial() {
             const portSelect = document.getElementById('portSelect');
             if (portSelect.value === '') {
                 alert('Please select a port');
                 return;
             }
-            
+
+            setLoading('connectBtn', true, "Connecting...");
+            // First attempt to connect using the selected port
+            attemptSerialConnection(portSelect.value, 0);
+        }
+
+        function attemptSerialConnection(portName, attempt) {
+            const maxAttempts = 2; // Total attempts including the initial one
+
             fetch('/api/connect_serial', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    port_name: portSelect.value
+                    port_name: portName
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error connecting to serial');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Connection successful
+                        alert(data.message);
+                        setLoading('connectBtn', false);
+                    } else {
+                        // Connection failed
+                        if (attempt < maxAttempts) {
+                            // Try to refresh ports and connect again
+                            console.log(`Connection failed on attempt ${attempt + 1}, trying to refresh ports...`);
+                            refreshSerialAndReconnect(portName, attempt + 1);
+                        } else {
+                            // All attempts failed
+                            alert(data.message);
+                            setLoading('connectBtn', false);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (attempt < maxAttempts) {
+                        // Try to refresh ports and connect again
+                        console.log(`Connection error on attempt ${attempt + 1}, trying to refresh ports...`);
+                        refreshSerialAndReconnect(portName, attempt + 1);
+                    } else {
+                        alert('Error connecting to serial');
+                        setLoading('connectBtn', false);
+                    }
+                });
         }
-        
+
+        function refreshSerialAndReconnect(originalPortName, attempt) {
+            // Refresh the port list first
+            fetch('/api/refresh_ports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the dropdown with refreshed ports
+                        const select = document.getElementById('portSelect');
+                        select.innerHTML = '<option value="">Select Port</option>';
+                        data.ports.forEach(port => {
+                            const option = document.createElement('option');
+                            option.value = port;
+                            option.textContent = port;
+                            select.appendChild(option);
+                        });
+
+                        // Check if the original port is now available or if there are alternative ports
+                        if (data.ports.includes(originalPortName)) {
+                            // Original port is now available, try connecting to it again
+                            attemptSerialConnection(originalPortName, attempt);
+                        } else if (data.ports.length > 0) {
+                            // Original port not found, but we have other ports - ask user if they want to try the first one
+                            const firstPort = data.ports[0];
+                            const userChoice = confirm(`Original port not found. Found ${data.ports.length} port(s) after refresh. Try ${firstPort} instead?`);
+                            if (userChoice) {
+                                // Update the selection to the new port and try connecting
+                                select.value = firstPort;
+                                attemptSerialConnection(firstPort, attempt);
+                            } else {
+                                alert(`Connection failed. Original port not found. Available: ${data.ports.join(', ')}`);
+                            }
+                        } else {
+                            // No ports found after refresh
+                            alert(`Connection failed. No ports found after refresh. Original port was: ${originalPortName}`);
+                        }
+                    } else {
+                        // Port refresh failed, but we can still try connecting with original port
+                        attemptSerialConnection(originalPortName, attempt);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing ports:', error);
+                    // If refresh fails, still try to connect with original port
+                    attemptSerialConnection(originalPortName, attempt);
+                });
+        }
+
         function jog(axis, direction) {
             const distance = document.getElementById('jogDistance').value;
-            
+
             fetch('/api/jog', {
                 method: 'POST',
                 headers: {
@@ -450,15 +951,15 @@
                     distance: parseFloat(distance)
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Jog command sent:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Jog command sent:', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
-        
+
         function setFeedRate(rateType) {
             fetch('/api/feed_rate', {
                 method: 'POST',
@@ -469,15 +970,15 @@
                     rate_type: rateType
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Feed rate set:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Feed rate set:', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
-        
+
         function machineControl(command) {
             fetch('/api/machine_control', {
                 method: 'POST',
@@ -488,15 +989,15 @@
                     command: command
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Machine control:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Machine control:', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
-        
+
         function createPoint() {
             fetch('/api/create_point', {
                 method: 'POST',
@@ -504,34 +1005,34 @@
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Add point to the recorded points list
-                    const point = data.point;
-                    recordedPoints.push({x: point.x, y: point.y});
-                    
-                    // Update the points table
-                    updatePointsTable();
-                    
-                    // Redraw the plot
-                    drawPlot();
-                    
-                    alert(`Point recorded: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`);
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error creating point');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Add point to the recorded points list
+                        const point = data.point;
+                        recordedPoints.push({ x: point.x, y: point.y });
+
+                        // Update the points table
+                        updatePointsTable();
+
+                        // Redraw the plot
+                        drawPlot();
+
+                        alert(`Point recorded: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error creating point');
+                });
         }
-        
+
         function updatePointsTable() {
             const tbody = document.getElementById('pointsTableBody');
             tbody.innerHTML = '';
-            
+
             recordedPoints.forEach((point, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -542,15 +1043,15 @@
                 tbody.appendChild(row);
             });
         }
-        
+
         function drawPlot() {
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             // Draw grid
             ctx.strokeStyle = '#eee';
             ctx.lineWidth = 1;
-            
+
             // Draw horizontal grid lines
             for (let y = 0; y <= canvas.height; y += 50) {
                 ctx.beginPath();
@@ -558,7 +1059,7 @@
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
             }
-            
+
             // Draw vertical grid lines
             for (let x = 0; x <= canvas.width; x += 50) {
                 ctx.beginPath();
@@ -566,15 +1067,15 @@
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
-            
+
             // Draw origin axes
             ctx.strokeStyle = '#999';
             ctx.lineWidth = 2;
-            
-            // Find the center of the canvas 
+
+            // Find the center of the canvas
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            
+
             // Draw X and Y axes
             ctx.beginPath();
             ctx.moveTo(0, centerY);
@@ -582,13 +1083,13 @@
             ctx.moveTo(centerX, 0);
             ctx.lineTo(centerX, canvas.height);
             ctx.stroke();
-            
+
             // Draw axis labels
             ctx.fillStyle = '#333';
             ctx.font = '12px Arial';
             ctx.fillText('X', canvas.width - 20, centerY - 10);
             ctx.fillText('Y', centerX + 10, 20);
-            
+
             // Draw recorded points if any exist
             if (recordedPoints.length > 0) {
                 // Calculate scale based on the range of points to fit in canvas
@@ -596,31 +1097,31 @@
                 let maxX = Math.max(...recordedPoints.map(p => p.x));
                 let minY = Math.min(...recordedPoints.map(p => p.y));
                 let maxY = Math.max(...recordedPoints.map(p => p.y));
-                
+
                 const rangeX = maxX - minX;
                 const rangeY = maxY - minY;
-                
+
                 // Determine scale factors to fit points in the canvas (leaving 20px margin)
                 const scaleX = rangeX > 0 ? (canvas.width - 40) / rangeX : 1;
                 const scaleY = rangeY > 0 ? (canvas.height - 40) / rangeY : 1;
-                
+
                 // Use the smaller scale to ensure all points fit
                 const scale = Math.min(scaleX, scaleY) * 0.8; // Reduce slightly to add padding
-                
+
                 // Draw each point
                 ctx.fillStyle = '#ff0000';
                 for (let i = 0; i < recordedPoints.length; i++) {
                     const point = recordedPoints[i];
-                    
+
                     // Scale the coordinates (with margin for visibility)
                     let x = (point.x - minX) * scale + 20;
                     let y = canvas.height - ((point.y - minY) * scale + 20); // Flip Y axis to match traditional graph
-                    
+
                     // Draw the point
                     ctx.beginPath();
                     ctx.arc(x, y, 4, 0, 2 * Math.PI);
                     ctx.fill();
-                    
+
                     // Draw point number
                     ctx.fillStyle = '#000';
                     ctx.font = '10px Arial';
@@ -636,15 +1137,10 @@
                 ctx.textAlign = 'left';
             }
         }
-        
-        // Initialize the plot when the page loads
-        window.onload = function() {
-            drawPlot();
-        };
-        
+
         function exportDXF() {
             const filename = document.getElementById('dxfFilename').value;
-            
+
             fetch('/api/export_dxf', {
                 method: 'POST',
                 headers: {
@@ -654,19 +1150,19 @@
                     filename: filename
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error exporting DXF');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error exporting DXF');
+                });
         }
-        
+
         // Keyboard Control Functions
         let keyboardControlsEnabled = false;
-        
+
         function toggleKeyboardControl() {
             const checkbox = document.getElementById('keyboardEnable');
             keyboardControlsEnabled = checkbox.checked;
@@ -678,18 +1174,18 @@
                 console.log('Keyboard arrow controls disabled');
             }
         }
-        
+
         function handleKeyDown(event) {
             if (!keyboardControlsEnabled) return;
-            
+
             // Prevent default behavior for arrow keys to prevent page scrolling
             if ([37, 38, 39, 40].includes(event.keyCode)) {
                 event.preventDefault();
             }
-            
+
             const distance = document.getElementById('jogDistance').value;
-            
-            switch(event.keyCode) {
+
+            switch (event.keyCode) {
                 case 37: // Left arrow (X-)
                     sendJogCommand('x', 'negative', distance);
                     highlightButton('xNegBtn');
@@ -708,16 +1204,25 @@
                     break;
             }
         }
-        
+
+        let highlightTimers = {};
         function highlightButton(btnId) {
             const btn = document.getElementById(btnId);
-            const originalBg = btn.style.backgroundColor;
-            btn.style.backgroundColor = '#ff6600'; // Orange highlight
-            setTimeout(() => {
-                btn.style.backgroundColor = originalBg || '';
+            // Set highlight color (Orange)
+            btn.style.backgroundColor = '#ff6600';
+
+            // Clear existing timer to prevent premature reset
+            if (highlightTimers[btnId]) {
+                clearTimeout(highlightTimers[btnId]);
+            }
+
+            // Set new timer to revert color
+            highlightTimers[btnId] = setTimeout(() => {
+                btn.style.backgroundColor = ''; // Revert to CSS default
+                delete highlightTimers[btnId];
             }, 200);
         }
-        
+
         function sendJogCommand(axis, direction, distance) {
             fetch('/api/jog', {
                 method: 'POST',
@@ -730,14 +1235,239 @@
                     distance: parseFloat(distance)
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Jog command sent via keyboard:', `${axis}${direction}`, distance);
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Jog command sent via keyboard:', `${axis}${direction}`, distance);
+                })
+                .catch(error => {
+                    console.error('Error sending keyboard jog command:', error);
+                });
+        }
+
+        // Manual motion functions without homing requirement
+        function manualJog(axis, direction) {
+            const distance = parseFloat(document.getElementById('manualDistance').value);
+
+            // Calculate actual distance based on direction
+            const actualDistance = distance * direction;
+
+            // Construct G-code command for relative movement
+            let command = 'G91\n'; // Set to relative mode
+            switch (axis) {
+                case 'x':
+                    command += `G1 X${actualDistance}\n`;
+                    break;
+                case 'y':
+                    command += `G1 Y${actualDistance}\n`;
+                    break;
+                case 'z':
+                    command += `G1 Z${actualDistance}\n`;
+                    break;
+            }
+            command += 'G90'; // Return to absolute mode
+
+            // Send the command via raw command API
+            const rawCmdData = {
+                command: 'send_command',
+                raw_command: command
+            };
+
+            fetch('/api/machine_control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(rawCmdData)
             })
-            .catch(error => {
-                console.error('Error sending keyboard jog command:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Manual jog command sent for ${axis}${direction === 1 ? '+' : '-'}:`, command);
+                    addToConsole(`Sent: ${command.replace(/\n/g, ' ')}`);
+                    if (data.response) {
+                        // Handle multi-line responses properly by showing each line separately
+                        const responseLines = data.response.split('\n');
+                        responseLines.forEach(line => {
+                            if (line.trim() !== '') {
+                                addToConsole(`Response: ${line}`);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending manual jog command:', error);
+                    addToConsole(`Error: ${error.message || 'Unknown error'}`);
+                });
+        }
+
+        // Functions for GRBL console
+        function sendRawCommand() {
+            const command = document.getElementById('rawCommandInput').value.trim();
+            if (!command) {
+                alert('Please enter a command to send');
+                return;
+            }
+
+            fetch('/api/raw_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: command })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addToConsole(`Sent: ${data.command_sent}`);
+                        if (data.response) {
+                            // Handle multi-line responses properly by showing each line separately
+                            const responseLines = data.response.split('\n');
+                            responseLines.forEach(line => {
+                                if (line.trim() !== '') {
+                                    addToConsole(`Response: ${line}`);
+                                }
+                            });
+                        } else {
+                            addToConsole('Response: (no response)');
+                        }
+                    } else {
+                        addToConsole(`Error: ${data.error || 'Unknown error'}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending raw command:', error);
+                    addToConsole(`Error sending command: ${error.message || 'Unknown error'}`);
+                });
+        }
+
+
+        function setCommandAndSend(cmd) {
+            // For all commands, proceed normally
+            document.getElementById('rawCommandInput').value = cmd;
+            sendRawCommand();
+        }
+
+        function addToConsole(message) {
+            const console = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+
+            // Split the message by newlines to handle multi-line responses properly
+            const lines = message.split('\n');
+
+            // Add each line with its own timestamp
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim() !== '') { // Only add non-empty lines
+                    console.value += `[${timestamp}] ${lines[i]}\n`;
+                } else if (i === 0 && lines.length === 1) {
+                    // If the message is just an empty line, add it anyway
+                    console.value += `[${timestamp}] \n`;
+                }
+            }
+
+            // Scroll to bottom
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').value = '';
+        }
+
+        function getMachineStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update System Mode Indicator
+                    const modeIndicator = document.getElementById('systemMode');
+                    if (data.mode) {
+                        if (modeIndicator) {
+                            modeIndicator.textContent = data.mode + " Mode";
+                            if (data.mode === "Klipper") {
+                                modeIndicator.className = "badge badge-info";
+                            } else if (data.mode === "Disconnected") {
+                                modeIndicator.className = "badge badge-danger";
+                            } else {
+                                modeIndicator.className = "badge badge-warning";
+                            }
+                        }
+
+                        // Toggle UI elements based on mode
+                        const serialPanel = document.getElementById('serialConnectionPanel');
+                        if (serialPanel) {
+                            if (data.mode === "Klipper") {
+                                serialPanel.style.display = 'none';
+                            } else if (data.mode === "Disconnected") {
+                                serialPanel.style.display = 'block'; // Show serial panel so they can try to connect?
+                                // Actually if disconnected, maybe they want to see ports to connect manually?
+                                // Yes, in GRBL logic, disconnected means "No connection yet but maybe ports are there?"
+                                // But python logic says "No ports found" -> Disconnected.
+                                // If no ports, serial panel will show empty list. That's fine.
+                                serialPanel.style.display = 'block';
+                            } else {
+                                serialPanel.style.display = 'block';
+                            }
+                        }
+                    }
+
+                    if (data.status) {
+                        addToConsole(`Status: ${data.status}`);
+                    } else if (!data.connected) {
+                        addToConsole('Status: Disconnected');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting machine status:', error);
+                    addToConsole(`Error getting status: ${error.message || 'Unknown error'}`);
+                });
+        }
+
+        let statusInterval = null;
+        function getStatusPeriodically() {
+            if (statusInterval) {
+                // Stop if already running
+                clearInterval(statusInterval);
+                statusInterval = null;
+                document.querySelector('button[onclick="getStatusPeriodically()"]').textContent = 'Auto-Update Status';
+                addToConsole('Stopped auto-status updates');
+            } else {
+                // Start periodic updates
+                statusInterval = setInterval(getMachineStatus, 500);
+                document.querySelector('button[onclick="getStatusPeriodically()"]').textContent = 'Stop Auto-Update';
+                addToConsole('Started auto-status updates (every 0.5 seconds)');
+            }
+        }
+
+        function downloadLogs() {
+            // Get the console content
+            const consoleElement = document.getElementById('consoleOutput');
+            const consoleContent = consoleElement.value;
+
+            // Create a Blob with the console content
+            const blob = new Blob([consoleContent], { type: 'text/plain' });
+
+            // Create a temporary link element
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+
+            // Create a timestamp for the filename
+            const now = new Date();
+            const timestamp = now.getFullYear() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0') +
+                '-' +
+                String(now.getHours()).padStart(2, '0') +
+                String(now.getMinutes()).padStart(2, '0') +
+                String(now.getSeconds()).padStart(2, '0');
+
+            a.download = `theSmallComparator-logs-${timestamp}.txt`;
+
+            // Trigger the download
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
         }
     </script>
 </body>
+
 </html>
