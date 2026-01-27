@@ -174,9 +174,9 @@ manage_theSmallComparator() {
             if [ -f "$REQUIREMENTS_FILE" ]; then
                 # Upgrade pip, setuptools and wheel first to ensure build environment works
                 echo -e "${YELLOW}Upgrading pip, setuptools, and wheel...${NC}"
-                ./${VENV_DIR}/bin/pip install --upgrade pip setuptools wheel
+                ./${VENV_DIR}/bin/pip install --upgrade --no-cache-dir pip setuptools wheel
                 
-                if ./${VENV_DIR}/bin/pip install -r "$REQUIREMENTS_FILE"; then
+                if ./${VENV_DIR}/bin/pip install --no-cache-dir -r "$REQUIREMENTS_FILE"; then
                     echo -e "${GREEN}✓ Python packages installed successfully.${NC}"
                 else
                     echo -e "${RED}✗ Failed to install Python packages.${NC}"
