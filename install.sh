@@ -137,7 +137,7 @@ manage_theSmallComparator() {
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y v4l-utils glib2
                     elif command -v apt-get &> /dev/null; then
-                         sudo apt update && sudo apt install -y v4l-utils libglib2.0-0
+                         sudo apt update && sudo apt install -y v4l-utils libglib2.0-0 python3-opencv
                     else
                          echo -e "${RED}Cannot install system dependencies automatically.${NC}"
                     fi
@@ -162,12 +162,12 @@ manage_theSmallComparator() {
             fi
 
             echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR'...${NC}"
-            if ! python3 -m venv --clear "$VENV_DIR"; then
+            if ! python3 -m venv --clear --system-site-packages "$VENV_DIR"; then
                 echo -e "${RED}✗ Failed to create Python virtual environment.${NC}"
                 return
             fi
             echo -e "${GREEN}✓ Virtual environment created successfully.${NC}"
-            echo -e "${YELLOW}Note: Installing packages like OpenCV might take a long time if pre-built wheels are missing for your architecture.${NC}"
+            echo -e "${GREEN}Using system OpenCV to optimize installation time on Raspberry Pi.${NC}"
 
 
             echo -e "${YELLOW}Installing required Python packages into the virtual environment...${NC}"
