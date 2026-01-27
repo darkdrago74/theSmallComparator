@@ -162,14 +162,20 @@ manage_theSmallComparator() {
             fi
 
             echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR'...${NC}"
-            if ! python3 -m venv "$VENV_DIR"; then
+            if ! python3 -m venv --clear "$VENV_DIR"; then
                 echo -e "${RED}✗ Failed to create Python virtual environment.${NC}"
                 return
             fi
             echo -e "${GREEN}✓ Virtual environment created successfully.${NC}"
+            echo -e "${YELLOW}Note: Installing packages like OpenCV might take a long time if pre-built wheels are missing for your architecture.${NC}"
+
 
             echo -e "${YELLOW}Installing required Python packages into the virtual environment...${NC}"
             if [ -f "$REQUIREMENTS_FILE" ]; then
+                # Upgrade pip, setuptools and wheel first to ensure build environment works
+                echo -e "${YELLOW}Upgrading pip, setuptools, and wheel...${NC}"
+                ./${VENV_DIR}/bin/pip install --upgrade pip setuptools wheel
+                
                 if ./${VENV_DIR}/bin/pip install -r "$REQUIREMENTS_FILE"; then
                     echo -e "${GREEN}✓ Python packages installed successfully.${NC}"
                 else
