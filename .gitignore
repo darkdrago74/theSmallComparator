@@ -18,3 +18,8 @@ theSmallComparator-logs-*.txt
 
 # Helper scripts
 dumbinitgit.sh
+
+# Gemini related files
+.qwen/
+.agent/
+dumbinitgit
