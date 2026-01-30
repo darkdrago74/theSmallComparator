@@ -137,7 +137,7 @@ manage_theSmallComparator() {
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y v4l-utils glib2
                     elif command -v apt-get &> /dev/null; then
-                         sudo apt update && sudo apt install -y v4l-utils libglib2.0-0 python3-opencv
+                         sudo apt update && sudo apt install -y v4l-utils libglib2.0-0
                     else
                          echo -e "${RED}Cannot install system dependencies automatically.${NC}"
                     fi
@@ -146,28 +146,51 @@ manage_theSmallComparator() {
                 echo -e "${GREEN}✓ v4l-utils is installed${NC}"
             fi
 
+            # Check for Python 3.11 specifically
+            if ! command -v python3.11 &> /dev/null; then
+                echo -e "${YELLOW}Python 3.11 not found. Installing...${NC}"
+                if command -v sudo &> /dev/null; then
+                    if command -v dnf &> /dev/null; then
+                        sudo dnf install -y python3.11
+                    elif command -v apt-get &> /dev/null; then
+                         sudo apt update && sudo apt install -y python3.11 python3.11-venv python3.11-dev
+                    else
+                         echo -e "${RED}Cannot install Python 3.11 automatically.${NC}"
+                         return
+                    fi
+                else
+                    echo -e "${RED}sudo not available. Please install 'python3.11' manually.${NC}"
+                    return
+                fi
+            else
+                echo -e "${GREEN}✓ Python 3.11 is installed${NC}"
+            fi
+
             # Create Python virtual environment and install packages
             VENV_DIR="venv"
             REQUIREMENTS_FILE="./dependencies/requirements-simple.txt"
 
-            echo -e "${YELLOW}Checking for python3-venv package...${NC}"
-            if ! dpkg -s python3-venv >/dev/null 2>&1; then
-                echo -e "${YELLOW}python3-venv not found. Installing...${NC}"
-                if command -v sudo &> /dev/null; then
-                    sudo apt-get update && sudo apt-get install -y python3-venv
-                else
-                    echo -e "${RED}sudo not available. Please install 'python3-venv' manually.${NC}"
-                    return
+            echo -e "${YELLOW}Checking for python3.11-venv package...${NC}"
+            if command -v dpkg &> /dev/null; then
+                if ! dpkg -s python3.11-venv >/dev/null 2>&1; then
+                    echo -e "${YELLOW}python3.11-venv not found. Installing...${NC}"
+                    if command -v sudo &> /dev/null; then
+                        sudo apt-get update && sudo apt-get install -y python3.11-venv
+                    else
+                        echo -e "${RED}sudo not available. Please install 'python3.11-venv' manually.${NC}"
+                        return
+                    fi
                 fi
             fi
 
-            echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR'...${NC}"
-            if ! python3 -m venv --clear --system-site-packages "$VENV_DIR"; then
+            echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR' using Python 3.11...${NC}"
+            if ! python3.11 -m venv --clear "$VENV_DIR"; then
                 echo -e "${RED}✗ Failed to create Python virtual environment.${NC}"
                 return
             fi
-            echo -e "${GREEN}✓ Virtual environment created successfully.${NC}"
-            echo -e "${GREEN}Using system OpenCV to optimize installation time on Raspberry Pi.${NC}"
+            echo -e "${GREEN}✓ Virtual environment created successfully using Python 3.11.${NC}"
+
+
 
 
             echo -e "${YELLOW}Installing required Python packages into the virtual environment...${NC}"
