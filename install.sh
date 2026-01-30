@@ -146,49 +146,94 @@ manage_theSmallComparator() {
                 echo -e "${GREEN}✓ v4l-utils is installed${NC}"
             fi
 
-            # Check for Python 3.11 specifically
-            if ! command -v python3.11 &> /dev/null; then
-                echo -e "${YELLOW}Python 3.11 not found. Installing...${NC}"
-                if command -v sudo &> /dev/null; then
-                    if command -v dnf &> /dev/null; then
-                        sudo dnf install -y python3.11
-                    elif command -v apt-get &> /dev/null; then
-                         sudo apt update && sudo apt install -y python3.11 python3.11-venv python3.11-dev
-                    else
-                         echo -e "${RED}Cannot install Python 3.11 automatically.${NC}"
-                         return
-                    fi
+            # Check for Python 3.13 (Target for Trixie)
+            PYTHON_CMD="python3"
+            if command -v python3.13 &> /dev/null; then
+                PYTHON_CMD="python3.13"
+                echo -e "${GREEN}✓ Python 3.13 detected ($PYTHON_CMD)${NC}"
+            elif command -v python3 &> /dev/null; then
+                PY_VER=$(python3 --version 2>&1 | awk '{print $2}')
+                if [[ "$PY_VER" == 3.13* ]]; then
+                    echo -e "${GREEN}✓ Python 3.13 detected ($PYTHON_CMD is $PY_VER)${NC}"
                 else
-                    echo -e "${RED}sudo not available. Please install 'python3.11' manually.${NC}"
-                    return
+                    echo -e "${YELLOW}Warning: Python 3.13 not found. Found $PY_VER instead. Proceeding, but pre-compiled packages might be missing.${NC}"
                 fi
             else
-                echo -e "${GREEN}✓ Python 3.11 is installed${NC}"
+                 echo -e "${RED}Python 3 not found!${NC}"
+                 return
+            fi
+
+            # Check for availability of system packages (to avoid compilation)
+            USE_SYSTEM_PACKAGES=true
+            MISSING_SYS_PKG=false
+            
+            echo -e "${YELLOW}Checking for system packages to optimize installation...${NC}"
+            if command -v apt-cache &> /dev/null; then
+                for pkg in python3-opencv python3-numpy python3-pil; do
+                    if ! apt-cache show "$pkg" &> /dev/null; then
+                        echo -e "${YELLOW}System package '$pkg' not found in repositories.${NC}"
+                        MISSING_SYS_PKG=true
+                    fi
+                done
+            else
+                MISSING_SYS_PKG=true # Can't check, assume missing to be safe or just proceed? 
+                # On non-Debian, apt-cache won't exist.
+                if [ -f /etc/debian_version ]; then
+                     echo -e "${YELLOW}apt-cache not found on Debian system?${NC}"
+                else
+                     echo -e "${YELLOW}Not a Debian system, will rely on pip.${NC}"
+                fi
+            fi
+
+            if [ "$MISSING_SYS_PKG" = true ]; then
+                echo -e "${YELLOW}Pre-compiled system packages missing. Falling back to pip installation.${NC}"
+                echo -e "${YELLOW}Note: This may take a significant amount of time to compile modules (OpenCV, NumPy).${NC}"
+                USE_SYSTEM_PACKAGES=false
+            else
+                echo -e "${GREEN}✓ System packages available. Installation will be fast.${NC}"
+                if command -v sudo &> /dev/null; then
+                     echo -e "${YELLOW}Installing system python libraries...${NC}"
+                     sudo apt update && sudo apt install -y python3-opencv python3-numpy python3-pil
+                fi
             fi
 
             # Create Python virtual environment and install packages
             VENV_DIR="venv"
             REQUIREMENTS_FILE="./dependencies/requirements-simple.txt"
 
-            echo -e "${YELLOW}Checking for python3.11-venv package...${NC}"
+            echo -e "${YELLOW}Checking for venv package...${NC}"
+            VENV_PKG="python3-venv"
+            # If using specific python version like 3.13, we might need python3.13-venv
+            if [[ "$PYTHON_CMD" == "python3.13" ]]; then
+                 if apt-cache show python3.13-venv &> /dev/null; then
+                     VENV_PKG="python3.13-venv"
+                 fi
+            fi
+            
             if command -v dpkg &> /dev/null; then
-                if ! dpkg -s python3.11-venv >/dev/null 2>&1; then
-                    echo -e "${YELLOW}python3.11-venv not found. Installing...${NC}"
+                if ! dpkg -s "$VENV_PKG" >/dev/null 2>&1 && ! dpkg -s python3-venv >/dev/null 2>&1; then
+                    echo -e "${YELLOW}$VENV_PKG not found. Installing...${NC}"
                     if command -v sudo &> /dev/null; then
-                        sudo apt-get update && sudo apt-get install -y python3.11-venv
+                        sudo apt-get update && sudo apt-get install -y "$VENV_PKG"
                     else
-                        echo -e "${RED}sudo not available. Please install 'python3.11-venv' manually.${NC}"
+                        echo -e "${RED}sudo not available. Please install '$VENV_PKG' manually.${NC}"
                         return
                     fi
                 fi
             fi
 
-            echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR' using Python 3.11...${NC}"
-            if ! python3.11 -m venv --clear "$VENV_DIR"; then
+            echo -e "${YELLOW}Creating Python virtual environment at '$VENV_DIR' using $PYTHON_CMD...${NC}"
+            
+            VENV_FLAGS="--clear"
+            if [ "$USE_SYSTEM_PACKAGES" = true ]; then
+                VENV_FLAGS="--clear --system-site-packages"
+            fi
+            
+            if ! $PYTHON_CMD -m venv $VENV_FLAGS "$VENV_DIR"; then
                 echo -e "${RED}✗ Failed to create Python virtual environment.${NC}"
                 return
             fi
-            echo -e "${GREEN}✓ Virtual environment created successfully using Python 3.11.${NC}"
+            echo -e "${GREEN}✓ Virtual environment created successfully.${NC}"
 
 
 
@@ -199,6 +244,16 @@ manage_theSmallComparator() {
                 echo -e "${YELLOW}Upgrading pip, setuptools, and wheel...${NC}"
                 ./${VENV_DIR}/bin/pip install --upgrade --no-cache-dir pip setuptools wheel
                 
+                # If we are in fallback mode (not using system packages), we need to manually install the heavy libs
+                # because they are commented out in requirements-simple.txt
+                if [ "$USE_SYSTEM_PACKAGES" = false ]; then
+                     echo -e "${YELLOW}Installing heavy dependencies via pip (Fallback mode)...${NC}"
+                     echo -e "${YELLOW}This includes: numpy, opencv-python-headless, Pillow${NC}"
+                     ./${VENV_DIR}/bin/pip install --no-cache-dir numpy>=1.24.3 opencv-python-headless>=4.10.0.84 Pillow>=10.0.0
+                else
+                     echo -e "${GREEN}Using system packages for numpy, opencv, pillow.${NC}"
+                fi
+
                 if ./${VENV_DIR}/bin/pip install --no-cache-dir -r "$REQUIREMENTS_FILE"; then
                     echo -e "${GREEN}✓ Python packages installed successfully.${NC}"
                 else
