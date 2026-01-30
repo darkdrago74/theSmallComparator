@@ -210,12 +210,12 @@ manage_theSmallComparator() {
                 return
             fi
 
-            # Create system-wide command
             echo -e "${YELLOW}Creating system-wide command...${NC}"
+            chmod +x "$(pwd)/launcher.sh"
             if command -v sudo &> /dev/null; then
-                sudo ln -sf "$(pwd)/theSmallComparator" /usr/local/bin/theSmallComparator 2>/dev/null || \
-                sudo cp "$(pwd)/theSmallComparator" /usr/local/bin/theSmallComparator 2>/dev/null || \
-                echo -e "${YELLOW}Could not create system-wide command. You can run theSmallComparator with './theSmallComparator'${NC}"
+                sudo ln -sf "$(pwd)/launcher.sh" /usr/local/bin/theSmallComparator 2>/dev/null || \
+                sudo cp "$(pwd)/launcher.sh" /usr/local/bin/theSmallComparator 2>/dev/null || \
+                echo -e "${YELLOW}Could not create system-wide command. You can run theSmallComparator with './launcher.sh'${NC}"
             else
                 echo -e "${YELLOW}Sudo not available, skipping system-wide command creation${NC}"
             fi
@@ -279,7 +279,7 @@ WantedBy=multi-user.target"
 
             echo -e "${GREEN}=== theSmallComparator Installation Completed ===${NC}"
             echo -e "${GREEN}To start theSmallComparator:${NC}"
-            echo -e "  - Run: ./theSmallComparator${NC}"
+            echo -e "  - Run: ./launcher.sh${NC}"
             echo -e "  - Or access the web interface at: http://localhost:5001${NC}"
             echo -e "${YELLOW}Note: Log out and log back in for group changes to take effect${NC}"
             ;;
