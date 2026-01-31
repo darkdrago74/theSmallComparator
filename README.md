@@ -35,6 +35,8 @@ Designed for robustness on **Raspberry Pi**, Fedora, and Debian systems. The pro
     -   Configure user permissions (`dialout`, `video` groups).
     -   Create a systemd service for auto-start.
 
+    > **Note on Output**: You may see some **red error messages** during the process (e.g., `ERROR: pip's dependency resolver...`). These are related to harmless package conflicts with system libraries and are **safely ignored**. The system recovers automatically.
+
 3.  **Log out and Log back in**: Required for group permissions (USB/Camera access) to take effect.
     ```bash
     logout
