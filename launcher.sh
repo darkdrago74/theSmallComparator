@@ -44,7 +44,14 @@ manage_service() {
                  echo -e "${RED}Cannot stop service without sudo.${NC}"
             fi
         else
+
             echo -e "${YELLOW}Warning: Running multiple instances might cause port conflicts.${NC}"
+            read -p "Do you want to run a manual instance anyway? (y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo -e "${GREEN}Exiting.${NC}"
+                exit 0
+            fi
         fi
     else
         echo -e "${GREEN}The background service '$SERVICE_NAME' is NOT running.${NC}"
