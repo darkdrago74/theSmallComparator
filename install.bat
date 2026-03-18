@@ -35,17 +35,26 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [1/3] Creating virtual environment...
+echo [1/3] Checking virtual environment...
+if exist venv (
+    venv\Scripts\python.exe --version >nul 2>&1
+    if !errorlevel! neq 0 (
+        echo [WARNING] Existing virtual environment is broken or uses a missing Python version.
+        echo Recreating it...
+        rmdir /s /q venv
+    )
+)
+
 if not exist venv (
     python -m venv venv
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
         echo [ERROR] Failed to create virtual environment.
         pause
         exit /b 1
     )
     echo Virtual environment created successfully.
 ) else (
-    echo [CHECK] Virtual environment already exists.
+    echo [CHECK] Virtual environment already exists and is functional.
 )
 
 echo.
