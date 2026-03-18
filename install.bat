@@ -11,10 +11,24 @@ echo.
 :: Check for Python
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in PATH.
-    echo Please install Python 3 from https://www.python.org/
+    echo [WARNING] Python is not installed or not in PATH.
+    echo We are going to download and install Python 3 automatically.
+    echo Please ensure you are running this script as Administrator.
     pause
-    exit /b 1
+    echo Downloading Python installer ^(3.11.9^)...
+    curl -# -o python_installer.exe https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
+    if !errorlevel! neq 0 (
+        echo [ERROR] Failed to download Python. Please install manually from https://www.python.org/
+        pause
+        exit /b 1
+    )
+    echo Installing Python...
+    start /wait python_installer.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
+    del python_installer.exe
+    echo Python installed successfully.
+    echo [IMPORTANT] You must close this window and run install.bat again to load the new PATH.
+    pause
+    exit /b 0
 ) else (
     for /f "tokens=*" %%i in ('python --version') do set py_ver=%%i
     echo [CHECK] Found !py_ver!.

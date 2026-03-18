@@ -71,6 +71,7 @@ manage_theSmallComparator() {
             # Check if git is installed
             if ! command -v git &> /dev/null; then
                 echo -e "${RED}Git is not installed. Installing...${NC}"
+                read -p "Press Enter to continue with automatic installation or Ctrl+C to abort..."
                 if command -v sudo &> /dev/null; then
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y git
@@ -93,6 +94,7 @@ manage_theSmallComparator() {
             # Check if Python 3 is installed
             if ! command -v python3 &> /dev/null; then
                 echo -e "${RED}Python 3 is not installed. This is required for theSmallComparator.${NC}"
+                read -p "Press Enter to continue with automatic installation or Ctrl+C to abort..."
                 if command -v sudo &> /dev/null; then
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y python3 python3-pip
@@ -115,6 +117,7 @@ manage_theSmallComparator() {
             # Check if pip3 is available
             if ! command -v pip3 &> /dev/null; then
                 echo -e "${RED}pip3 is not installed. Installing...${NC}"
+                read -p "Press Enter to continue with automatic installation or Ctrl+C to abort..."
                 if command -v sudo & > /dev/null; then
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y python3-pip
@@ -133,6 +136,7 @@ manage_theSmallComparator() {
             # Check if v4l-utils and other system deps are available
             if ! command -v v4l2-ctl &> /dev/null; then
                 echo -e "${YELLOW}Installing system dependencies (v4l-utils, libglib2.0-0)...${NC}"
+                read -p "Press Enter to continue with automatic installation or Ctrl+C to abort..."
                 if command -v sudo &> /dev/null; then
                     if command -v dnf &> /dev/null; then
                         sudo dnf install -y v4l-utils glib2
@@ -193,6 +197,7 @@ manage_theSmallComparator() {
                 echo -e "${GREEN}✓ System packages available. Installation will be fast.${NC}"
                 if command -v sudo &> /dev/null; then
                      echo -e "${YELLOW}Installing system python libraries...${NC}"
+                     read -p "Press Enter to continue with automatic installation or Ctrl+C to abort..."
                      sudo apt update && sudo apt install -y python3-opencv python3-numpy python3-pil
                 fi
             fi

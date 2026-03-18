@@ -45,18 +45,25 @@ The system consists of multiple interconnected modules:
 ## Installation Process
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.8+ (Automatically installed on Windows and Debian/Fedora Linux if missing)
 - Git
 - System packages for OpenCV and camera support
 
-### Quick Installation
+### Windows Installation
+1. Clone or download the repository.
+2. Right-click on `install.bat` and select **Run as administrator**.
+   - If Python is not detected, the script will warn you and then automatically download and install Python 3.11.9. You will need to re-run the script after the installation finishes so the updated PATH can be loaded.
+   - The script will automatically create a virtual environment, upgrade pip, and install all necessary dependencies (including OpenCV, Numpy, and Flask).
+3. Once the installation is complete, double-click `start.bat` to launch the application.
+
+### Linux Quick Installation
 1. Clone the repository
-2. Run `install.sh`
+2. Run `./install.sh`
 3. Log out and back in (to apply group memberships)
 
-### System-wide Installation
-The installation script performs:
-- System dependency installation (OpenCV, camera drivers, etc.)
+### Linux System-wide Installation
+The Linux installation script performs:
+- Automatic detection and installation of missing system dependencies (Git, Python 3, pip, OpenCV, camera drivers, etc.) with user warnings.
 - Python package installation via pip
 - User group additions (video and dialout for camera/serial access)
 - **On Fedora, it automatically attempts to configure SELinux to allow the application to run.**
